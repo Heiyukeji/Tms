@@ -6,7 +6,7 @@
 html[class] body,
 html[class] #root { background-color: transparent !important; }
 
-/* 三月空间:博客同款。深空底 + 左上紫光 + 右下蓝光;HeroUI 的主色/卡片色只在这套皮肤里改
+/* 黑彧科技:博客同款。深空底 + 左上紫光 + 右下蓝光;HeroUI 的主色/卡片色只在这套皮肤里改
    (值是 HSL 三元组,HeroUI 用 hsl(var(--heroui-xxx)) 取),别的皮肤不受影响 */
 html.sanyue {
   background:
