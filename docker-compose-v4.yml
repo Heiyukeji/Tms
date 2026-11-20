@@ -6,7 +6,7 @@ services:
       driver: json-file
       options:
         max-size: "20m"
-        max-file: "3"
+        max-file: "3"docker-compose-v4.yml
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
@@ -31,7 +31,7 @@ services:
       retries: 10
 
   backend:
-    image: ghcr.io/Heiyukeji/springboot-backend:latest
+    image: ghcr.io/heiyukeji/springboot-backend:latest
     container_name: springboot-backend
     logging:
       driver: json-file
@@ -64,7 +64,7 @@ services:
       start_period: 90s
 
   frontend:
-    image: ghcr.io/Heiyukeji/vite-frontend:latest
+    image: ghcr.io/heiyukeji/vite-frontend:latest
     container_name: vite-frontend
     logging:
       driver: json-file
