@@ -8,8 +8,8 @@ export interface Skin {
 }
 
 export const SKINS: Skin[] = [
-  // 跟博客「三月空间」(3yuedaohang.com)同一套:深空黑底 + 紫蓝渐变。颜色在 themes.css
-  { id: "sanyue", name: "三月空间", base: "dark", swatch: "linear-gradient(135deg,#8a6bff,#5b8cff)" },
+  // 跟博客「黑彧科技」(88.hy88.de.com)同一套:深空黑底 + 紫蓝渐变。颜色在 themes.css
+  { id: "sanyue", name: "黑彧科技", base: "dark", swatch: "linear-gradient(135deg,#8a6bff,#5b8cff)" },
   { id: "aurora", name: "极光", base: "dark", swatch: "linear-gradient(135deg,#302b63,#a855f7)" },
   { id: "mesh", name: "流光", base: "light", swatch: "linear-gradient(135deg,#c2e9fb,#fbc2eb)" },
   { id: "deepsea", name: "深海", base: "dark", swatch: "linear-gradient(135deg,#0e3a5f,#38bdf8)" },
