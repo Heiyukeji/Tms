@@ -2,8 +2,10 @@ name: release-gost
 
 # 合体面板节点端:构建 hybrid gost(带 sing-box 支持)并发布成 release 资产,
 # 让新节点用 install.sh 一键装就自带协议能力。
-# 触发:推送 gost-v* 标签(与 docker 版本标签分开,不污染 :latest 生产镜像)。
+# 触发:推送 gost-v* 标签(不抢全局 latest,latest 留给桌面自动发布)。
 #   git tag gost-v1 && git push origin gost-v1
+# 发布策略:在 gost-v* 上建历史版本 release;同时维护固定指针 tag gost-latest
+#   及其 release(覆盖资产),install.sh 固定从 gost-latest 下载,与桌面 latest 隔离。
 
 on:
   push:
@@ -32,14 +34,13 @@ jobs:
           cp ../install.sh ../dist/install.sh
           ls -la ../dist
 
-      # 先发 draft:action-gh-release 是「先建 release 再传 asset」,release 一建
-      # latest 就立刻指向新 tag,而那会儿 30MB 的二进制还在传 —— 中间这一两分钟里
-      # releases/latest/download/gost-amd64 是 404,正在装节点的人会莫名其妙地
-      # 「下载失败」,而且看不出跟发版有关。draft 期间 latest 不动,传完再一次性放出来。
-      - name: Publish release (draft first)
+      # 先发 draft:先建 release 再传 asset,传完再放出来,避免 404 窗口。
+      # make_latest=false:不抢全局 latest(latest 留给桌面自动发布)。
+      - name: Publish versioned release (draft, not latest)
         uses: softprops/action-gh-release@v2
         with:
           draft: true
+          make_latest: "false"
           files: |
             dist/gost-amd64
             dist/gost-arm64
@@ -47,10 +48,33 @@ jobs:
           body: |
             合体面板节点端 hybrid gost(内置 sing-box 下发/协议支持)。
             新节点安装:
-            `curl -L https://github.com/Heiyukeji/Tms/releases/latest/download/install.sh -o install.sh && chmod +x install.sh && ./install.sh -a http://面板IP:6365 -s 节点密钥`
+            `curl -L https://github.com/Heiyukeji/Tms/releases/download/gost-latest/install.sh -o install.sh && chmod +x install.sh && ./install.sh -a http://面板IP:6365 -s 节点密钥`
 
-      # asset 全部就位后才真正发布并置为 latest,把上面那个 404 窗口彻底关掉
+      # asset 全部就位后才真正发布(不置 latest,latest 留给桌面自动发布)
       - name: Flip draft to published
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release edit "${GITHUB_REF_NAME}" --draft=false --latest
+        run: gh release edit "${GITHUB_REF_NAME}" --draft=false --latest=false
+
+      # 维护固定指针 gost-latest:install.sh 固定从这里下载,与桌面 latest 隔离。
+      # 每次发版都把 gost-latest tag 移到当前 commit,并覆盖其 release 资产。
+      - name: Update gost-latest pointer release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          gh api --method POST "repos/${{ github.repository }}/git/refs" \
+            -f ref="refs/tags/gost-latest" -f sha="${GITHUB_SHA}" \
+            || gh api --method PATCH "repos/${{ github.repository }}/git/refs/tags/gost-latest" \
+               -f sha="${GITHUB_SHA}" -F force=true
+          if gh release view gost-latest >/dev/null 2>&1; then
+            gh release upload gost-latest dist/gost-amd64 dist/gost-arm64 dist/install.sh --clobber
+            gh release edit gost-latest --draft=false --latest=false --target "${GITHUB_SHA}"
+          else
+            gh release create gost-latest \
+              dist/gost-amd64 dist/gost-arm64 dist/install.sh \
+              --title "gost-latest" \
+              --notes "Latest hybrid gost build (auto-updated pointer; install.sh downloads from here)." \
+              --target "${GITHUB_SHA}" \
+              --latest=false
+          fi
