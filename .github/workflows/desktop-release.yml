@@ -41,7 +41,7 @@ jobs:
 
       - name: Build macOS DMG (Intel + Apple Silicon)
         if: runner.os == 'macOS'
-        run: npm run dist:desktop -- --mac dmg
+        run: npm run dist:desktop -- --mac dmg --x64 --arm64
 
       - name: Upload Windows EXE
         if: runner.os == 'Windows'
@@ -93,8 +93,9 @@ jobs:
 
       - name: Install Android SDK components
         run: |
-          sdkmanager --install "platforms;android-34" "build-tools;34.0.0"
-          yes | sdkmanager --licenses
+          SDKMANAGER=$(find "$ANDROID_HOME/cmdline-tools" -name sdkmanager -type f | sort -V | tail -1)
+          yes | "$SDKMANAGER" --licenses
+          "$SDKMANAGER" --install "platforms;android-34" "build-tools;34.0.0"
 
       # 仓库未提交 gradle-wrapper.jar，使用 setup-gradle 提供的 Gradle 8.2.1
       - uses: gradle/actions/setup-gradle@v4
