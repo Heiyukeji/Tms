@@ -70,7 +70,7 @@ export const Navbar = () => {
             <Link
               className="flex justify-start items-center gap-2 max-w-[200px] sm:max-w-none"
               color="foreground"
-              href="/"
+              href={import.meta.env.MODE === 'desktop' ? '#/' : '/'}
             >
               <Logo size={24} />
               <p className="font-bold text-inherit truncate">{appName}</p>

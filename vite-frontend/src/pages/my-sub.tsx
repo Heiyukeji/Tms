@@ -26,7 +26,7 @@ export default function MySubPage() {
 
   // 订阅链接开头:管理员设了「订阅地址(给车友的)」就用它,没设 = 网页地址(和以前一样)。
   // 和线路一起在 load() 里取,线路出来时地址已经是对的
-  const [subBase, setSubBase] = useState<string>(window.location.origin);
+  const [subBase, setSubBase] = useState<string>(import.meta.env.MODE === 'desktop' ? '' : window.location.origin);
   const subUrl = (token: string) => `${subBase}/api/v1/open_api/sub?token=${token}`;
   // Clash / Mihomo 是另一套格式(YAML),和上面那条 base64 链接列表不通用。
   // 用 Clash Verge、ClashMeta 的人贴上面那条会得到一个空订阅。

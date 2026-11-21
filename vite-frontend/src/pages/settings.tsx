@@ -34,7 +34,7 @@ export const SettingsPage = () => {
   // 加载面板地址列表
   const loadPanelAddresses = async () => {
     (window as any).setPanelAddresses = setPanelAddressesFunc
-    getPanelAddresses();
+    await getPanelAddresses();
   };
 
   // 添加新面板地址
@@ -50,7 +50,8 @@ export const SettingsPage = () => {
       return;
     }
     (window as any).setPanelAddresses = setPanelAddressesFunc
-    savePanelAddress(newName.trim(), newAddress.trim());
+    await savePanelAddress(newName.trim(), newAddress.trim());
+    await reinitializeBaseURL();
     setNewName('');
     setNewAddress('');
     toast.success('添加成功');
@@ -59,15 +60,15 @@ export const SettingsPage = () => {
   // 设置当前面板地址
   const setCurrentPanel = async (name: string) => {
     (window as any).setPanelAddresses = setPanelAddressesFunc
-    setCurrentPanelAddress(name);
-    reinitializeBaseURL();
+    await setCurrentPanelAddress(name);
+    await reinitializeBaseURL();
   };
 
   // 删除面板地址
   const handleDeletePanelAddress = async (name: string) => {
     (window as any).setPanelAddresses = setPanelAddressesFunc
-    deletePanelAddress(name);
-    reinitializeBaseURL();
+    await deletePanelAddress(name);
+    await reinitializeBaseURL();
     toast.success('删除成功');
   };
 

@@ -1,4 +1,5 @@
 import { getConfigByName } from "@/api";
+import { getPanelUrl } from "@/utils/panel";
 
 /**
  * 给车友看 / 复制 / 出二维码的订阅链接用哪个地址开头。
@@ -46,7 +47,7 @@ const usable = (raw: unknown): string => {
 };
 
 export const getSubBase = async (): Promise<string> => {
-  const origin = window.location.origin;
+  const origin = (await getPanelUrl())?.origin || "";
 
   try {
     const res: any = await getConfigByName("sub_url");

@@ -13,6 +13,7 @@ import toast from 'react-hot-toast';
 import { copyTextToClipboard } from "@/utils/clipboard";
 import axios from 'axios';
 import NodeMonitorModal from "@/components/node-monitor";
+import { getPanelUrl } from "@/utils/panel";
 
 
 import {
@@ -550,7 +551,12 @@ export default function NodePage() {
       // 面板地址(网站配置的 ip)没设时,自动用当前访问域名 + 后端默认口 6365 填好再重试,
       // 免得用户手配或手打命令(手打易带 http:// 导致节点离线)
       if (res.code !== 0 && String(res.msg || "").includes("ip")) {
-        await updateConfig("ip", `${window.location.hostname}:6365`);
+        const panelUrl = await getPanelUrl();
+        if (!panelUrl) {
+          toast.error('请先设置面板地址');
+          return;
+        }
+        await updateConfig("ip", `${panelUrl.hostname}:6365`);
         res = await getNodeInstallCommand(node.id);
       }
       if (res.code === 0 && res.data) {

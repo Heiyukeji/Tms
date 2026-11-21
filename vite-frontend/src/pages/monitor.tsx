@@ -11,6 +11,7 @@ import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@herou
 import toast from "react-hot-toast";
 import NodeMonitorModal from "@/components/node-monitor";
 import { copyTextToClipboard } from "@/utils/clipboard";
+import { getPanelUrl } from "@/utils/panel";
 import {
   getMonitorOverview, getMonitorSettings, saveMonitorSettings, testMonitorTelegram,
   saveNodeMeta, getProbeTargets, saveProbeTarget, deleteProbeTarget,
@@ -315,9 +316,13 @@ function Targets() {
 
 function StatusSettings() {
   const [s, setS] = useState<any>(null);
-  useEffect(() => { getMonitorSettings().then((r: any) => r.code === 0 && setS(r.data)); }, []);
+  const [panelOrigin, setPanelOrigin] = useState("");
+  useEffect(() => {
+    getMonitorSettings().then((r: any) => r.code === 0 && setS(r.data));
+    getPanelUrl().then(url => setPanelOrigin(url?.origin || ""));
+  }, []);
   if (!s) return <div className="flex justify-center py-16"><Spinner /></div>;
-  const url = `${window.location.origin}/status`;
+  const url = panelOrigin ? `${panelOrigin}/status` : "请先设置面板地址";
   const save = async (patch: any) => {
     const next = { ...s, ...patch };
     setS(next);

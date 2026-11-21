@@ -8,29 +8,38 @@ interface PanelAddress {
   inx: boolean;
 }
 
-const setPanelAddressesFunc = (newAddress: PanelAddress[]) => {
-  newAddress.forEach(item => {
-    if (item.inx) {
-      baseURL = `${item.address}/api/v1/`;
-      axios.defaults.baseURL = baseURL;
-    }
-  });
+const setPanelAddressesFunc = (newAddress: PanelAddress[] = []) => {
+  baseURL = '';
+  const current = newAddress.find(item => item.inx);
+  if (current) baseURL = `${current.address.replace(/\/+$/, '')}/api/v1/`;
+  axios.defaults.baseURL = baseURL;
 }
 
 function getWebViewPanelAddress() {
   (window as any).setAddresses = setPanelAddressesFunc
-  getPanelAddresses("setAddresses");
+  return getPanelAddresses("setAddresses");
 };
 
 let baseURL: string = '';
+let baseURLReady: Promise<void>;
 
-export const reinitializeBaseURL = () => {
-  if (isWebViewFunc()) {
-    getWebViewPanelAddress();
-  } else {
-    baseURL = import.meta.env.VITE_API_BASE ? `${import.meta.env.VITE_API_BASE}/api/v1/` : '/api/v1/';
-    axios.defaults.baseURL = baseURL;
-  }
+export const reinitializeBaseURL = (): Promise<void> => {
+  baseURL = '';
+  axios.defaults.baseURL = '';
+  baseURLReady = (async () => {
+    try {
+      if (isWebViewFunc()) {
+        await getWebViewPanelAddress();
+      } else {
+        baseURL = import.meta.env.VITE_API_BASE ? `${import.meta.env.VITE_API_BASE}/api/v1/` : '/api/v1/';
+        axios.defaults.baseURL = baseURL;
+      }
+    } catch {
+      baseURL = '';
+      axios.defaults.baseURL = '';
+    }
+  })();
+  return baseURLReady;
 };
 
 reinitializeBaseURL();
@@ -50,7 +59,9 @@ function handleTokenExpired() {
   window.localStorage.removeItem('name');
   
   // 跳转到登录页面
-  if (window.location.pathname !== '/') {
+  if (import.meta.env.MODE === 'desktop') {
+    if (window.location.hash !== '#/') window.location.hash = '/';
+  } else if (window.location.pathname !== '/') {
     window.location.href = '/';
   }
 }
@@ -97,7 +108,8 @@ function timeoutFor(path: string): number {
 }
 
 const Network = {
-  get: function<T = any>(path: string = '', data: any = {}): Promise<ApiResponse<T>> {
+  get: async function<T = any>(path: string = '', data: any = {}): Promise<ApiResponse<T>> {
+    await baseURLReady;
     return new Promise(function(resolve) {
       // 如果baseURL是默认值且是WebView环境，说明没有设置面板地址
       if (baseURL === '') {
@@ -134,7 +146,8 @@ const Network = {
     });
   },
 
-  post: function<T = any>(path: string = '', data: any = {}): Promise<ApiResponse<T>> {
+  post: async function<T = any>(path: string = '', data: any = {}): Promise<ApiResponse<T>> {
+    await baseURLReady;
     return new Promise(function(resolve) {
       // 如果baseURL是默认值且是WebView环境，说明没有设置面板地址
       if (baseURL === '') {

@@ -1,51 +1,95 @@
 
 
 
+interface PanelAddress {
+    name: string;
+    address: string;
+    inx: boolean;
+}
+
+const desktopPanel = () => (window as any).desktopPanel;
+
+const notifyPanelCallback = (callback: string, addresses: PanelAddress[]) => {
+    const fn = (window as any)[callback];
+    if (typeof fn === "function") fn(addresses);
+};
+
+export function isDesktopFunc() {
+    return !!desktopPanel();
+}
+
 // 获取面板地址列表
-export async function getPanelAddresses(callback: string = "setPanelAddresses"){
+export async function getPanelAddresses(callback: string = "setPanelAddresses") {
+    if (isDesktopFunc()) {
+        const addresses: PanelAddress[] = await desktopPanel().getPanelAddresses();
+        notifyPanelCallback(callback, addresses);
+        return addresses;
+    }
     if ((window as any).JsInterface && (window as any).JsInterface.getPanelAddresses) {
         (window as any).JsInterface.getPanelAddresses(callback);
     } else if ((window as any).webkit && (window as any).webkit.messageHandlers) {
         (window as any).webkit.messageHandlers.getPanelAddresses.postMessage(callback);
     }
-
+    return [];
 }
 
 // 保存面板地址
-export async function savePanelAddress(name: string, address: string){
+export async function savePanelAddress(name: string, address: string) {
+    if (isDesktopFunc()) {
+        const addresses: PanelAddress[] = await desktopPanel().savePanelAddress(name, address);
+        notifyPanelCallback("setPanelAddresses", addresses);
+        return addresses;
+    }
     if ((window as any).JsInterface) {
         (window as any).JsInterface.savePanelAddress(name, address);
     } else if ((window as any).webkit && (window as any).webkit.messageHandlers) {
         (window as any).webkit.messageHandlers.savePanelAddress.postMessage({ name, address });
     }
+    return [];
 }
 
 // 设置当前面板地址
 export async function setCurrentPanelAddress(name: string) {
+    if (isDesktopFunc()) {
+        const addresses: PanelAddress[] = await desktopPanel().setCurrentPanelAddress(name);
+        notifyPanelCallback("setPanelAddresses", addresses);
+        return addresses;
+    }
     if ((window as any).JsInterface) {
         (window as any).JsInterface.setCurrentPanelAddress(name);
     } else if ((window as any).webkit && (window as any).webkit.messageHandlers) {
         (window as any).webkit.messageHandlers.setCurrentPanelAddress.postMessage({ name });
     }
+    return [];
 }
 
 // 删除面板地址
-export async function deletePanelAddress(name: string){
+export async function deletePanelAddress(name: string) {
+    if (isDesktopFunc()) {
+        const addresses: PanelAddress[] = await desktopPanel().deletePanelAddress(name);
+        notifyPanelCallback("setPanelAddresses", addresses);
+        return addresses;
+    }
     if ((window as any).JsInterface) {
         (window as any).JsInterface.deletePanelAddress(name);
     } else if ((window as any).webkit && (window as any).webkit.messageHandlers) {
         (window as any).webkit.messageHandlers.deletePanelAddress.postMessage({ name });
     }
+    return [];
 }
 
-export function isWebViewFunc(){
-  if((window as any).JsInterface !== undefined && (window as any).JsInterface.getPanelAddresses !== undefined) {
-    return true;
-  }else if((window as any).webkit && (window as any).webkit.messageHandlers && (window as any).webkit.messageHandlers.getPanelAddresses !== undefined) {
-    return true;
-  }else {
-    return false;
-  }
+// 桌面端需要当前面板地址生成订阅、状态页等链接；Web 仍使用当前网页地址。
+export async function getPanelUrl(): Promise<URL | null> {
+    if (!isDesktopFunc()) return new URL(window.location.origin);
+    const addresses: PanelAddress[] = await desktopPanel().getPanelAddresses();
+    const current = addresses.find(item => item.inx);
+    return current ? new URL(current.address) : null;
+}
+
+export function isWebViewFunc() {
+    return isDesktopFunc()
+        || ((window as any).JsInterface !== undefined && (window as any).JsInterface.getPanelAddresses !== undefined)
+        || !!((window as any).webkit && (window as any).webkit.messageHandlers && (window as any).webkit.messageHandlers.getPanelAddresses !== undefined);
 }
 
 // 验证面板地址格式

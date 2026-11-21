@@ -13,3 +13,6 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# 签名私钥与密码不入库（仅本地保管，CI 通过 Secrets 注入）
+signing/

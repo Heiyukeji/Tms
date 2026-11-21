@@ -182,7 +182,7 @@ export default function UserPage() {
   const [subAllToken, setSubAllToken] = useState<string>('');
   const [subUserName, setSubUserName] = useState<string>('');
   // 订阅链接开头:设了「订阅地址(给车友的)」就用它,没设 = 网页地址(和以前一样)。打开弹窗前先取好
-  const [subBase, setSubBase] = useState<string>(window.location.origin);
+  const [subBase, setSubBase] = useState<string>(import.meta.env.MODE === 'desktop' ? '' : window.location.origin);
   const subUrl = (token: string) => `${subBase}/api/v1/open_api/sub?token=${token}`;
   // Clash / Mihomo 走独立路径:那边吃 YAML,和上面这条 base64 链接列表不通用,
   // 贴错了客户端里是空的。
