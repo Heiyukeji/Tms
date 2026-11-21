@@ -6,7 +6,7 @@ services:
       driver: json-file
       options:
         max-size: "20m"
-        max-file: "3"docker-compose-v4.yml
+        max-file: "3"
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
