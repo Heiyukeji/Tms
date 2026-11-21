@@ -107,12 +107,12 @@ jobs:
       - name: Build debug APK
         if: env.KEYSTORE_BASE64 == ''
         working-directory: android-app
-        run: gradle assembleDebug --no-daemon -PversionCode=${{ github.run_number + 1000 }} -PversionName=1.0.${{ github.run_number }}
+        run: gradle assembleDebug --no-daemon -PversionCode=$((GITHUB_RUN_NUMBER + 1000)) -PversionName=1.0.$GITHUB_RUN_NUMBER
 
       - name: Build release APK
         if: env.KEYSTORE_BASE64 != ''
         working-directory: android-app
-        run: gradle assembleRelease --no-daemon -PversionCode=${{ github.run_number + 1000 }} -PversionName=1.0.${{ github.run_number }}
+        run: gradle assembleRelease --no-daemon -PversionCode=$((GITHUB_RUN_NUMBER + 1000)) -PversionName=1.0.$GITHUB_RUN_NUMBER
 
       # 用固定证书签名：同一证书 + 递增 versionCode = 可覆盖升级
       - name: Sign release APK with fixed keystore
