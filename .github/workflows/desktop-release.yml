@@ -170,11 +170,11 @@ jobs:
             artifacts/**/*.dmg
             artifacts/**/*.apk
 
-      - name: Publish release without marking latest
+      - name: Publish release and mark as latest
         env:
           GH_TOKEN: ${{ github.token }}
         run: >-
           gh api --method PATCH
           "repos/${{ github.repository }}/releases/${{ steps.create-release.outputs.id }}"
           -F draft=false
-          -f make_latest=false
+          -f make_latest=true
